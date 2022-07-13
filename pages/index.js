@@ -4,29 +4,20 @@ import styles from "../styles/Home.module.css";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSigner, useProvider } from "wagmi";
 import { Client } from "@xmtp/xmtp-js";
+import { useState } from "react";
 
 export default function Home() {
-  const getSignerOrProvider = async (needSigner = false) => {
-    try {
-      const provider = useProvider();
-      if ((needSigner = true)) {
-        const { data: signer } = useSigner();
-        return signer;
-      }
-      return provider;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+  const { data: signer } = useSigner();
+  const [conversations, setConversations] = useState("");
 
   const sendMessage = async () => {
     try {
-      const signer = await getSignerOrProvider(true);
       const xmtp = await Client.create(signer);
-      const conversation = await xmtp.conversations.newConversation(
-        "0x4a37dF8B8E1a79c364abB7C86716B5a8E435dC80"
-      );
-      const messages = await conversation.messages();
+      const allConversations = await xmtp.conversations.list();
+      setConversations(allConversations);
+      for (const conversation of allConversations) {
+        console.log(`${conversation.peerAddress}`);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -43,6 +34,13 @@ export default function Home() {
       <main className={styles.main}>
         <ConnectButton />
         <button onClick={sendMessage}>Send Message</button>
+        {conversations ? (
+        <ul>
+          {conversations.map((value, index) => {
+            return <li key={index}>{value.peerAddress}</li>;
+          })}
+        </ul>
+        ) : (<div></div>)}
       </main>
 
       <footer className={styles.footer}>
