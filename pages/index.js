@@ -2,15 +2,37 @@ import Head from "next/head";
 import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useSigner, useProvider } from "wagmi";
+import { useSigner, useProvider, useAccount } from "wagmi";
 import { Client } from "@xmtp/xmtp-js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Input,
+  Button,
+  List,
+  ListItem,
+  UnorderedList,
+} from "@chakra-ui/react";
+import { IoMdSend } from "react-icons/io";
+import { ethers } from "ethers";
+import truncateEthAddress from "truncate-eth-address";
 
 export default function Home() {
   const { data: signer } = useSigner();
-  const [conversations, setConversations] = useState("");
 
-  const sendMessage = async () => {
+  const { address } = useAccount({
+    onConnect() {
+      console.log(address);
+      // getAllConversations()
+    },
+  });
+
+  const [conversations, setConversations] = useState("");
+  const [receiverAddress, setReceiverAddress] = useState("");
+  const [message, setMessage] = useState("");
+  const [messages, setMessages] = useState("");
+
+  const getAllConversations = async () => {
     try {
       const xmtp = await Client.create(signer);
       const allConversations = await xmtp.conversations.list();
@@ -18,6 +40,49 @@ export default function Home() {
       for (const conversation of allConversations) {
         console.log(`${conversation.peerAddress}`);
       }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const sendMessage = async () => {
+    try {
+      if (receiverAddress) {
+        console.log(receiverAddress);
+        if (ethers.utils.isAddress(receiverAddress)) {
+          const xmtp = await Client.create(signer);
+          const conversation = await xmtp.conversations.newConversation(
+            receiverAddress
+          );
+          console.log(conversation);
+          if (message) {
+            await conversation.send(message);
+            setMessage("");
+          }
+        } else {
+          console.log("not a valid address");
+        }
+      } else {
+        console.log("receiver address is required");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const getMessages = async (receiverAddress) => {
+    try {
+      const xmtp = await Client.create(signer);
+      const conversation = await xmtp.conversations.newConversation(
+        receiverAddress
+      );
+      const messages = await conversation.messages();
+      setMessages(messages);
+      messages.map((message, index) => {
+        console.log(
+          message.senderAddress + "-" + message.content + "-" + index
+        );
+      });
     } catch (error) {
       console.log(error);
     }
@@ -33,14 +98,70 @@ export default function Home() {
 
       <main className={styles.main}>
         <ConnectButton />
-        <button onClick={sendMessage}>Send Message</button>
+        <button onClick={getAllConversations}>Send Message</button>
         {conversations ? (
-        <ul>
-          {conversations.map((value, index) => {
-            return <li key={index}>{value.peerAddress}</li>;
-          })}
-        </ul>
-        ) : (<div></div>)}
+          <List spacing={3}>
+            {conversations.map((value, index) => {
+              return (
+                <ListItem key={index}>
+                  <Button
+                    onClick={(e) => {
+                      setReceiverAddress(e.target.value);
+                      getMessages(e.target.value);
+                    }}
+                    value={value.peerAddress}
+                  >
+                    {value.peerAddress}
+                  </Button>
+                </ListItem>
+              );
+            })}
+          </List>
+        ) : (
+          <div></div>
+        )}
+        <br />
+        {messages ? (
+          <Box h={300} p={4} overflowY="scroll">
+            <List spacing={3}>
+              {messages.map((message, index) => {
+                return (
+                  <ListItem key={index}>
+                    <Button value={message.senderAddress}>
+                      {truncateEthAddress(message.senderAddress)}
+                      <br />
+                      {message.content}
+                    </Button>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
+        ) : (
+          <div></div>
+        )}
+        <Input
+          variant="filled"
+          placeholder="Enter Address"
+          value={receiverAddress}
+          onChange={(e) => setReceiverAddress(e.target.value)}
+        />
+        <br />
+        <Input
+          variant="filled"
+          placeholder="Enter Message"
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <br />
+        <Button
+          rightIcon={<IoMdSend />}
+          colorScheme="blue"
+          size="md"
+          onClick={sendMessage}
+        >
+          Send
+        </Button>
       </main>
 
       <footer className={styles.footer}>
