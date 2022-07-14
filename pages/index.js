@@ -100,23 +100,25 @@ export default function Home() {
         <ConnectButton />
         <button onClick={getAllConversations}>Send Message</button>
         {conversations ? (
-          <List spacing={3}>
-            {conversations.map((value, index) => {
-              return (
-                <ListItem key={index}>
-                  <Button
-                    onClick={(e) => {
-                      setReceiverAddress(e.target.value);
-                      getMessages(e.target.value);
-                    }}
-                    value={value.peerAddress}
-                  >
-                    {value.peerAddress}
-                  </Button>
-                </ListItem>
-              );
-            })}
-          </List>
+          <Box>
+            <List spacing={3}>
+              {conversations.map((value, index) => {
+                return (
+                  <ListItem key={index}>
+                    <Button
+                      onClick={(e) => {
+                        setReceiverAddress(e.target.value);
+                        getMessages(e.target.value);
+                      }}
+                      value={value.peerAddress}
+                    >
+                      {value.peerAddress}
+                    </Button>
+                  </ListItem>
+                );
+              })}
+            </List>
+          </Box>
         ) : (
           <div></div>
         )}
