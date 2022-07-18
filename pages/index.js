@@ -97,6 +97,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
+        <h1 class="text-3xl font-bold underline">Hello world!</h1>
         <ConnectButton />
         <button onClick={getAllConversations}>Send Message</button>
         {conversations ? (
