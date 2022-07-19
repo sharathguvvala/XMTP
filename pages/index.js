@@ -52,7 +52,6 @@ export default function Home() {
       if (receiverAddress) {
         console.log(receiverAddress);
         if (ethers.utils.isAddress(receiverAddress)) {
-          const xmtp = await Client.create(signer);
           const conversation = await xmtp.conversations.newConversation(
             receiverAddress
           );
@@ -74,7 +73,6 @@ export default function Home() {
 
   const getMessages = async (receiverAddress) => {
     try {
-      const xmtp = await Client.create(signer);
       const conversation = await xmtp.conversations.newConversation(
         receiverAddress
       );
