@@ -1,5 +1,4 @@
 import Head from "next/head";
-import Image from "next/image";
 import styles from "../styles/Home.module.css";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useSigner, useProvider, useAccount } from "wagmi";
@@ -22,18 +21,18 @@ export default function Home() {
   const [receiverAddress, setReceiverAddress] = useState("");
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState("");
-  const [xmtp, setXMTP] = useState();
+  const [xmtp, setXMTP] = useState("");
 
-  const { data: signer } = useSigner();
+  // const { data: signer } = useSigner();
 
-  const { address } = useAccount({
-    async onConnect() {
-      console.log(address);
-      const xmtp = await Client.create(signer);
-      setXMTP(xmtp)
-      await getAllConversations()
-    },
-  });
+  // const { address } = useAccount({
+  //   async onConnect() {
+  //     console.log(address);
+  //     const xmtp = await Client.create(signer);
+  //     setXMTP(xmtp)
+  //     await getAllConversations()
+  //   },
+  // });
 
   const getAllConversations = async () => {
     try {
@@ -102,7 +101,7 @@ export default function Home() {
         </div>
         <div class="grid gap-1">
           <div class="grid-cols-4">
-            {address && conversations ? (
+            {conversations ? (
               <Box>
                 <List spacing={3}>
                   {conversations.map((value, index) => {
@@ -127,7 +126,7 @@ export default function Home() {
             )}
           </div>
           <div class="grid-cols-8">
-            {address && messages ? (
+            {messages ? (
               <div>
                 <Box h={300} p={4} overflowY="scroll">
                   <List spacing={3}>
